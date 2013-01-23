@@ -14,71 +14,25 @@ $(VALID_TARGETS): $$(PDF_TARGETS)
 .SECONDEXPANSION:
 DOT_FILES = $(wildcard $(dir $@)*.dot)
 EPS_TARGETS = $(DOT_FILES:.dot=.eps)
+HEADER_FILE = $(dir $@)header.txt
 %.pdf: %.md $$(EPS_TARGETS)
-	pandoc $< -o $@
+	if [ -f $(HEADER_FILE) ]; then \
+		cd $(dir $@); pandoc -H $(notdir $(HEADER_FILE)) $(notdir $<) -o $(notdir $@); \
+	else \
+		cd $(dir $@); pandoc $(notdir $<) -o $(notdir $@); \
+	fi
+
 
 %.html: %.md $$(EPS_TARGETS)
-	pandoc -thtml5 $< -o $@
+	pandoc -s -thtml5 $< -o $@
 
 %.eps: %.dot
 	dot -Teps $< -o $@
 
 clean:
 	git clean -x -d -n
-	@/bin/echo -n "Purge files? [y/n] "
-	read continue; \
+	@/bin/echo -n "Purge file(s)? [y/n] "
+	@read continue; \
 	if [ "$$continue" = "y" ]; then \
 		git clean -x -d -f; \
 	fi
-
-# none:
-# 	echo $(VALID_TARGETS)
-
-
-
-# $(VALID_TARGETS): 
-# 	echo $@
-
-# %.md:
-# 	echo $@ $^
-
-# all: pandocpdf pandochtml
-
-# epsfiles:
-# 	$(foreach d,$(wildcard *.dot),dot -Teps $(d) -o $(d:.dot=.eps);)
-
-# pandocpdf: epsfiles
-# 	pandoc -H header.txt cse150_notes.md -o cse150_notes.pdf
-
-# pandochtml: epsfiles
-# 	pandoc -s -thtml5 cse150_notes.md -o cse150_notes.html
-
-# pandoctex: epsfiles
-# 	pandoc -s -H header.txt -thtml5 cse150_notes.md -o cse150_notes.html
-
-# notes: pandocpdf
-
-
-# homework%eps: homework% 
-# 	#homework%/*.dot
-# 	#$(hwdir=test)
-
-# 	echo eps: $^
-# 	$(foreach d,$(wildcard $</*.dot),dot -Teps $(d) -o $(d:.dot=.eps) & ) \
-# 	wait
-
-# #%.eps: %.dot
-# #	echo $^
-
-# homework%pdf: homework% homework%/*.md homework%/header.txt homework%eps
-# 	#$(foreach d,$(homework%/*.dot),$(d:.dot=.eps))
-# 	#homework%eps 
-# 	$(hwdir=test)
-# 	echo $(hwdir)
-# 	cd $<; \
-# 	$(foreach d,$(wildcard $</*.md),pandoc -H header.txt ../$d -o ../$(d:.md=.pdf); )
-
-# #homework%/*.pdf
-
-# hw%: homework% homework%pdf
-# 	echo done
