@@ -17,9 +17,12 @@ EPS_TARGETS = $(DOT_FILES:.dot=.eps)
 %.pdf: %.md $$(EPS_TARGETS)
 	pandoc $< -o $@
 
+%.html: %.md $$(EPS_TARGETS)
+	pandoc -thtml5 $< -o $@
+
 %.eps: %.dot
 	dot -Teps $< -o $@
-	
+
 clean:
 	git clean -x -d -n
 	@/bin/echo -n "Purge files? [y/n] "
@@ -79,11 +82,3 @@ clean:
 
 # hw%: homework% homework%pdf
 # 	echo done
-
-clean:
-	git clean -x -d -n
-	@/bin/echo -n "Purge files? [y/n] "
-	read continue; \
-	if [ "$$continue" = "y" ]; then \
-		git clean -x -d -f; \
-	fi
